@@ -1,0 +1,7 @@
+------------------------------------------------------------------------
+r124 | mitch0 | 2012-08-21 20:41:03 +0000 (Tue, 21 Aug 2012) | 1 line
+Changed paths:
+   M /trunk/LibRangeCheck-2.0/LibRangeCheck-2.0.lua
+
+fix ticket #2 (GetSpellBookItemName throws lua error instead of returning nil for invalid slots since last patch on beta)
+------------------------------------------------------------------------
