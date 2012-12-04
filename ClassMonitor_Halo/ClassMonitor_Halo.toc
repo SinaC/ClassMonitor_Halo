@@ -1,13 +1,14 @@
 ## Interface: 50100
-## Version: 0.0.1
+## Version: 0.0.2
 ## Author: SinaC
 ## Title: |cFF148587Class|r Monitor Halo plugin
 ## Notes: Halo optimizer plugin for Class Monitor
 ## RequiredDeps: ClassMonitor
-## OptionalDeps: ClassMonitor_ConfigUI, LibRangeCheck-2.0
+## OptionalDeps: ClassMonitor_ConfigUI, LibRangeCheck-2.0, DBM-Core
 
 #@no-lib-strip@
 embeds.xml
 #@end-no-lib-strip@
 
+medias\medias.lua
 halo.lua
