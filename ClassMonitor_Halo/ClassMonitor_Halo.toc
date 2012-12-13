@@ -1,5 +1,5 @@
 ## Interface: 50100
-## Version: 0.0.2
+## Version: 0.0.3
 ## Author: SinaC
 ## Title: |cFF148587Class|r Monitor Halo plugin
 ## Notes: Halo optimizer plugin for Class Monitor
@@ -11,4 +11,5 @@ embeds.xml
 #@end-no-lib-strip@
 
 medias\medias.lua
-halo.lua
+core.lua
+options.lua

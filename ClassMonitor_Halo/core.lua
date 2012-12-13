@@ -1,19 +1,17 @@
 local ADDON_NAME, Engine = ...
 
+local class = select(2, UnitClass("player"))
+if class ~= "PRIEST" then return end -- Only for priests
+
 local ClassMonitor = ClassMonitor
 local UI = ClassMonitor.UI
 
-if UI.MyClass ~= "PRIEST" then return end -- Only for druid
-
-local ClassMonitor_ConfigUI = ClassMonitor_ConfigUI
 local rc = LibStub("LibRangeCheck-2.0")
 local DBM = DBM
 
 -- rc.RegisterCallback(frame, rc.CHECKERS_CHANGED, function() 
 	-- -- NOP
 -- end)
-
--- TODO: only if Halo talent learned
 
 local pluginName = "HALO"
 local haloPlugin = ClassMonitor:NewPlugin(pluginName)
@@ -34,7 +32,7 @@ end
 -- Return DBM distance if available, use LibRangeCheck otherwise
 local function GetRange(unit)
 	local minRange, maxRange
-	if DBM then
+	if DBM and UnitCanAssist("player", unit) then
 		local x, y = GetPlayerMapPosition("player")
 		if x == 0 and y == 0 then
 			SetMapToCurrentZone()
@@ -57,8 +55,8 @@ function haloPlugin:Initialize()
 	self.settings.unit = self.settings.unit or "target"
 	self.settings.checkraid = false -- TODO: activate   DefaultBoolean(self.settings.checkraid, true)
 	self.settings.colors = self.settings.colors or {
-		[1] = {1, 0, 0, 1}, -- Far
-		[2] = {0, 1, 0, 1}, -- Near
+		[1] = {0.15, 0.15, 0.15, 1}, -- Far
+		[2] = {0.85, 0.74, 0.25, 1}, -- Near
 		[3] = {1, 1, 1, 1}, -- Cursor
 	}
 	self.settings.displaycursor = DefaultBoolean(self.settings.displaycursor, false)
@@ -163,6 +161,8 @@ function haloPlugin:UpdateGraphics()
 		bar.middleStatus:Size(self.settings.cursorsize, bar.leftStatus:GetHeight())
 		bar.middleStatus:SetStatusBarColor(unpack(colorCursor))
 		bar.middleStatus:SetMinMaxValues(0, 1)
+	end
+	if bar.middleStatus then
 		bar.middleStatus:SetValue(0)
 	end
 	--
@@ -199,9 +199,9 @@ end
 
 function haloPlugin:UpdateCacheKey(event)
 	if self.settings.unit == "target" and (not event or event == "PLAYER_TARGET_CHANGED") then
-		self.UnitRangesCache["target"] = {} -- force cache refresh
+		self.UnitRangesCache["target"] = UnitName("target") and {} or nil-- force cache refresh or clear
 	elseif self.settings.unit == "focus" and (not event or event == "PLAYER_FOCUS_CHANGED") then
-		self.UnitRangesCache["focus"] = {} -- force cache refresh
+		self.UnitRangesCache["focus"] = UnitName("focus") and {} or nil-- force cache refresh or clear
 	elseif self.settings.checkraid == true and (not event or event == "GROUP_ROSTER_UPDATE") then
 		for i = 1, 40, 1 do
 			-- TODO: party ?
@@ -250,6 +250,7 @@ function haloPlugin:UpdateVisibility(event)
 end
 
 function haloPlugin:UpdateRanges(elapsed)
+	local visible = false
 	for unit, ranges in pairs(self.UnitRangesCache) do
 		local minRange, maxRange = GetRange(unit)
 		if minRange ~= ranges.minRange or maxRange ~= ranges.maxRange then
@@ -326,106 +327,11 @@ print("UNIT:"..tostring(unit).."  RANGE:"..tostring(ranges.minRange).."=>"..tost
 						end
 						self.bar.rightStatus:SetValue(0)
 					end
-				self.bar:Show()
+					self.bar:Show()
 				end
 			end
 		end
 	end
-end
-
--- UI
-if ClassMonitor_ConfigUI then
-	local Helpers = ClassMonitor_ConfigUI.Helpers
-
-	local unitValues = {
-		["target"] = "Target",
-		["focus"] = "Focus",
-	}
-	local function GetUnitValues()
-		return unitValues
-	end
-
-	local colors = Helpers.CreateColorsDefinition("colors", 3, {"Far", "Near", "Cursor"})
-	local options = {
-		[1] = Helpers.Description,
-		[2] = Helpers.Name,
-		[3] = Helpers.DisplayName,
-		[4] = Helpers.Kind,
-		[5] = Helpers.Enabled,
-		[6] = Helpers.WidthAndHeight,
-		[7] = {
-			key = "unit",
-			name = "Unit",
-			desc = "Unit to monitor",
-			type = "select",
-			values = GetUnitValues,
-			get = Helpers.GetValue,
-			set = Helpers.SetValue,
-			disabled = Helpers.IsPluginDisabled
-		},
-		[8] = {
-			key = "checkraid",
-			name = "Raid check",
-			desc = "Check raid health within halo radius to optimize healing",
-			type = "toggle",
-			get = Helpers.GetValue,
-			set = Helpers.SetValue,
-			disabled = true,
-		},
-		[9] = {
-			key = "showcdup",
-			name = "Only if CD up",
-			desc = "Display bar only when CD is up",
-			type = "toggle",
-			get = Helpers.GetValue,
-			set = Helpers.SetValue,
-			disabled = Helpers.IsPluginDisabled,
-		},
-		[10] = {
-			key = "directiontext",
-			name = "Direction text",
-			desc = "Display direction text",
-			type = "toggle",
-			get = Helpers.GetValue,
-			set = Helpers.SetValue,
-			disabled = Helpers.IsPluginDisabled,
-		},
-		[11] = {
-			key = "displaycursor",
-			name = "Cursor",
-			desc = "Display cursor",
-			type = "toggle",
-			get = Helpers.GetValue,
-			set = Helpers.SetValue,
-			disabled = Helpers.IsPluginDisabled,
-		},
-		[12] = {
-			key = "gradient",
-			name = "Gradient",
-			desc = "Display gradient instead of plain color",
-			type = "toggle",
-			get = Helpers.GetValue,
-			set = Helpers.SetValue,
-			disabled = Helpers.IsPluginDisabled,
-		},
-		[13] = {
-			key = "cursorsize",
-			name = "Cursor width",
-			desc = "Change cursor width",
-			type = "range",
-			min = 1, max = 10, step = 1,
-			get = Helpers.GetValue,
-			set = Helpers.SetValue,
-			disabled = Helpers.IsPluginDisabled,
-		},
-		[14] = colors,
-		[15] = Helpers.Anchor,
-		[16] = Helpers.AutoGridAnchor,
-	}
-
-	local short = "Halo"
-	local long = "Get the best of priest talent Halo aka HaloReallyPro"
-	ClassMonitor_ConfigUI:NewPluginDefinition(pluginName, options, short, long) -- add plugin definition in ClassMonitor_ConfigUI
 end
 
 --[[
