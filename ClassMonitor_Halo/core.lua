@@ -420,7 +420,7 @@ print("UNIT:"..tostring(unit).."  RANGE:"..tostring(dataByUnit.minRange).."=>"..
 		local count = 0
 		local value = 0
 		for unit, dataByUnit in pairs(self.DataByUnitCache) do
-			if dataByUnit.coefficient then
+			if dataByUnit.coefficient and not UnitIsUnit(unit, "player") then -- if valid coefficient and not the player
 				-- TODO: Perform some black magic with heal/healmax, coefficient and average heal ( + critical score??? )
 				--local health = UnitHealth(unit)
 				--local maxHealth = UnitHealthMax(unit)

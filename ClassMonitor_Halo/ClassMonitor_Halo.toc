@@ -1,5 +1,5 @@
 ## Interface: 50100
-## Version: 0.4
+## Version: 0.5
 ## Author: SinaC
 ## Title: |cFF148587Class|r Monitor Halo plugin
 ## Notes: Halo optimizer plugin for Class Monitor
